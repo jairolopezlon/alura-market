@@ -1,5 +1,66 @@
 
-let estaEncendido = true;
+const options = [
+  {
+    textToShow: 'Apagar sistema',
+    numOption: 0,
+    optionId: 'btnPowerOff',
+    fun: 'powerOffSystem'
+  },
+  {
+    textToShow: 'Mostrar Producto',
+    numOption: 1,
+    optionId: 'btnShowProducts',
+    fun: 'renderProducts'
+  },
+  {
+    textToShow: 'Calcular precio de producto comprados',
+    numOption: 2,
+    optionId: 'btnGetSubtotal',
+    fun: 'renderTotal'
+  },
+  {
+    textToShow: 'Mostrar Total de ventas del dia',
+    numOption: 3,
+    optionId: 'btnGetTotal',
+    fun: 'tempFun'
+  }
+]
+const currentPurchase = []
+
+const productsList = [
+  {
+    'name': 'Helado',
+    'price': '300',
+    'countSelled': 0
+  },
+  {
+    'name': 'Arroz',
+    'price': '500',
+    'countSelled': 0
+  },
+  {
+    'name': 'Gaseosa',
+    'price': '200',
+    'countSelled': 0
+  },
+  {
+    'name': 'Aceite',
+    'price': '600',
+    'countSelled': 0
+  }
+]
+
+function renderOptions1(options) {
+  let textOptions = 'Opciones Disponibles'
+  options.forEach(option => {
+    textOptions += `\n\t${option.numOption} - ${option.textToShow}`
+    // console.log(`${option.numOption} - ${option.textToShow}`)
+  })
+  return textOptions
+}
+
+
+let estaEncendido = false;
 let saldoInicial = 10000;
 let totalDeVentas = 0;
 let totalDeVenta = 0;
@@ -23,14 +84,8 @@ let precioProducto4 = 600;
 let cantidadProducto4 = 0;
 
 while (estaEncendido) {
-  let mensajeOpciones = `
-  Opciones Disponibles
-  0 - Apagar sistema
-  1 - Agregar Producto
-  2 - Calcular precio de producto comprados
-  3 - Mostrar Total de ventas del dia
-  `;
-  let option = prompt(mensajeOpciones)
+
+  let option = prompt(renderOptions1(options))
 
 
   /**
@@ -76,7 +131,7 @@ while (estaEncendido) {
       cantidadProducto3 = cantidadProducto3 + cantidadProducto
     } else if (productoSeleccionado == 4) {
       nombreProductoSeleccionado = 'Aceite'
-      totalDeVenta = precioProducto2 * cantidadProducto + totalDeVenta
+      totalDeVenta = precioProducto4 * cantidadProducto + totalDeVenta
       cantidadProducto4 = cantidadProducto4 + cantidadProducto
     }
     totalCantidadProductoEnVenta++
@@ -130,4 +185,121 @@ while (estaEncendido) {
   }
 }
 
-console.log('el sistema termino')
+// console.log('el sistema termino')
+
+
+// Opciones Disponibles
+//   0 - Apagar sistema
+//   1 - Agregar Producto
+//   2 - Calcular precio de producto comprados
+//   3 - Mostrar Total de ventas del dia
+//   `
+
+
+// function clearConsole() {
+//   console.clear()
+// }
+function loadElementHTML() {
+  const optionsContainer = document.querySelector('.container-options')
+  const productsContainer = document.querySelector('.products-container')
+  const subtotalContainer = document.querySelector('.subtotal-container')
+  const btnPowerOn = document.querySelector('#btnPowerOn')
+  const totalSpan = document.querySelector('#total')
+  const btnShowProducts = document.querySelector('#btnShowProducts')
+
+  return {
+    optionsContainer,
+    btnPowerOn,
+    productsContainer,
+    btnShowProducts,
+    subtotalContainer,
+    totalSpan
+  }
+}
+
+function renderOptions(options, optionsContainer) {
+
+  options.forEach(option => {
+    const btn = `<button id="${option.optionId}" data-opt_num="${option.numOption}" onclick="${option.fun}()" >${option.textToShow}</button>`
+    optionsContainer.innerHTML += btn
+  })
+
+}
+function tempFun() {
+  console.log('temporal')
+}
+
+function powerOffSystem() {
+  const elementsHTML = loadElementHTML()
+  elementsHTML.optionsContainer.innerHTML = ''
+  elementsHTML.btnPowerOn.style.display = 'block'
+}
+
+function renderProducts() {
+
+  const elementsHTML = loadElementHTML()
+  elementsHTML.btnShowProducts.setAttribute('disabled', true)
+  productsList.forEach(product => {
+    const productItemHTML = `<button onclick="addProduct('${product.name}', ${product.price} )" >${product.name} - $${product.price}</button>`
+    elementsHTML.productsContainer.innerHTML += productItemHTML
+  })
+
+}
+
+function addProduct(productName, price) {
+  currentPurchase.push({
+    name: productName,
+    price,
+    count: 1
+  })
+  console.log(currentPurchase)
+}
+
+function getSubtotal() {
+  const subtotal = {}
+
+  currentPurchase.forEach(product => {
+
+    if (subtotal[product.name]) {
+      subtotal[product.name].subtotal += product.price
+      subtotal[product.name].count += product.count
+    } else {
+      subtotal[product.name] = {
+        name: product.name,
+        subtotal: product.price,
+        count: product.count
+      }
+    }
+
+  })
+  return subtotal
+}
+
+function renderTotal() {
+  let total = 0
+  let subTotal = getSubtotal()
+  const elementsHTML = loadElementHTML()
+
+  elementsHTML.subtotalContainer.innerHTML = ''
+
+  Object.values(subTotal).forEach(item => {
+    const itemHTML = `<li> ${item.name} ${item.count} ${item.subtotal} </li>`
+    elementsHTML.subtotalContainer.innerHTML += itemHTML
+    total += item.subtotal
+  })
+
+  elementsHTML.totalSpan.innerHTML = `$ ${total}`
+}
+
+function clearCurrentPurchase() {
+  currentPurchase.slice(0)
+}
+
+function run() {
+  const elementsHTML = loadElementHTML()
+  renderOptions(options, elementsHTML.optionsContainer)
+  elementsHTML.btnPowerOn.style.display = 'none'
+
+  // renderOptions(options)
+}
+
